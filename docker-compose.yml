@@ -19,4 +19,3 @@ services:
         - SRV_ORG=es.local
         - SRV_DAYS=365
         - NO_TEST_USER=1
-root@Ubuntu-desk:/opt/docke
