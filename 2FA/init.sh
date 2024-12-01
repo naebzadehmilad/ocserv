@@ -12,7 +12,7 @@ GOOGLE_AUTH_SCRIPT="./ocserv"
 SYSCTL_CONF="/etc/sysctl.conf"
 
 
-sudo apt update && sudo apt install -y ocserv libpam-google-authenticator nload
+sudo apt update && sudo apt install -y ocserv libpam-google-authenticator nload iotop
 
 
 if [ -f "$OCSERV_CONFIG_SRC" ]; then
