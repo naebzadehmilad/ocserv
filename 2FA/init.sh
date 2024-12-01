@@ -39,6 +39,8 @@ rm "$CERT_DIR/server.csr"
 
 echo "Certificates generated at $SERVER_CERT and $SERVER_KEY"
 
-sudo systemctl restart ocserv
+systemctl enable ocserv &&  systemctl restart ocserv
 
+#sudo firewall-cmd --zone=public --add-interface=eth0 --permanent
+#sudo firewall-cmd --permanent --add-rich-rule='rule family="ipv4" source address="10.8.0.0/16" masquerade'
 
