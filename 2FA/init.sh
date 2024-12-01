@@ -9,6 +9,8 @@ OCSERV_CONFIG="/etc/ocserv/ocserv.conf"
 OCSERV_CONFIG_SRC="./ocserv.conf"
 PAM_CONFIG="/etc/pam.d/ocserv"
 GOOGLE_AUTH_SCRIPT="./ocserv"
+SYSCTL_CONF="/etc/sysctl.conf"
+
 
 sudo apt update && sudo apt install -y ocserv libpam-google-authenticator
 
@@ -26,6 +28,45 @@ else
     echo "ocserv Not found ..."
     exit 1
 fi
+
+
+cat <<EOL >> $SYSCTL_CONF
+###########
+###########
+###########
+fs.file-max = 1000000
+
+net.core.somaxconn = 32000
+net.ipv4.tcp_max_syn_backlog = 2048
+
+net.ipv4.tcp_fin_timeout = 15
+net.ipv4.tcp_rmem = 4096 87380 4194304
+net.ipv4.tcp_wmem = 4096 65536 4194304
+
+net.core.netdev_max_backlog = 5000
+
+net.ipv4.ip_default_ttl = 64
+
+net.core.rmem_max = 16777216
+net.core.wmem_max = 16777216
+
+net.ipv4.ip_forward = 1
+net.ipv4.conf.all.forwarding = 1
+
+net.ipv4.tcp_tw_reuse = 1
+
+net.ipv4.tcp_mem = 65536 131072 262144
+
+net.ipv4.conf.default.rp_filter = 2
+############
+############
+############
+EOL
+
+sysctl -p && sysctl --system 
+
+
+
 
 mkdir -p "$CERT_DIR"
 
