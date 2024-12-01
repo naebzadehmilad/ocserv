@@ -10,9 +10,11 @@ OCSERV_CONFIG_SRC="./ocserv.conf"
 PAM_CONFIG="/etc/pam.d/ocserv"
 GOOGLE_AUTH_SCRIPT="./ocserv"
 SYSCTL_CONF="/etc/sysctl.conf"
+HOST_NAME="OC1"
+ZONE="Asia/Tehran"
 
 
-sudo apt update && sudo apt install -y ocserv libpam-google-authenticator nload iotop  prometheus-node-exporter
+sudo apt update && sudo apt install -y ocserv libpam-google-authenticator nload iotop  prometheus-node-exporter python3-pip net-tools
 
 
 if [ -f "$OCSERV_CONFIG_SRC" ]; then
@@ -34,6 +36,9 @@ cat <<EOL >> $SYSCTL_CONF
 ###########
 ###########
 ###########
+
+#net.ipv4.tcp_syncookies = 1
+
 fs.file-max = 1000000
 
 net.core.somaxconn = 32000
@@ -79,6 +84,9 @@ openssl x509 -req -in "$CERT_DIR/server.csr" -signkey "$SERVER_KEY" -out "$SERVE
 rm "$CERT_DIR/server.csr"
 
 echo "Certificates generated at $SERVER_CERT and $SERVER_KEY"
+
+timedatectl set-timezone $ZONE
+hostnamectl set-hostname $HOST_NAME
 
 systemctl enable  prometheus-node-exporter
 systemctl start  prometheus-node-exporter
