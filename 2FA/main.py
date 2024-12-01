@@ -10,6 +10,14 @@ app = Flask(__name__)
 def generate_password():
     return ''.join(random.choices(string.ascii_letters + string.digits, k=8))
 
+def user_exists(username):
+    try:
+        subprocess.run(['id', username], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+
 def create_user(username):
     try:
         password = generate_password()
@@ -22,7 +30,7 @@ def create_user(username):
 
         subprocess.run(['usermod', '--password', hashed_password, username], check=True)
 
-        
+
 
         user_home = f'/home/{username}'
 
@@ -33,7 +41,7 @@ def create_user(username):
         )
 
         google_auth = None
-        
+
         subprocess.run(['chown', f'{username}:{username}', f'{user_home}/.google_authenticator'], check=True)
 
         subprocess.run(['chmod', '600', f'{user_home}/.google_authenticator'], check=True)
@@ -59,10 +67,66 @@ def create_user(username):
 
 def delete_user(username):
     try:
+        if not user_exists(username):
+            return {"error": f"User {username} not exists."}
+
         subprocess.run(['userdel', '-r', username], check=True)
         return {"username": username, "message": "User deleted successfully."}
     except subprocess.CalledProcessError as e:
         return {"error": f"Error deleting user {username}: {e}"}
+
+def update_google_auth(username):
+    try:
+        if not user_exists(username):
+            return {"error": f"User {username} Not exists."}
+
+        user_home = f'/home/{username}'
+        google_auth_file = f'{user_home}/.google_authenticator'
+
+        subprocess.run(
+            ['google-authenticator', '-t', '-d', '-f', '-u', '-w', '3', '-C', '-s', google_auth_file],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True
+        )
+
+        subprocess.run(['chmod', '600', google_auth_file], check=True)
+        subprocess.run(['chown', f'{username}:{username}', google_auth_file], check=True)
+
+        with open(google_auth_file, 'r') as file:
+            google_auth = file.read()
+
+        return {
+            "username": username,
+            "google_auth": google_auth,
+            "message": "Google Authenticator updated successfully."
+        }
+    except subprocess.CalledProcessError as e:
+        return {"error": f"Error updating Google Authenticator for {username}: {e}"}
+
+def update_password(username):
+    try:
+        if not user_exists(username):
+            return {"error": f"User {username} not exists."}
+
+        password = generate_password()
+        hashed_password = crypt.crypt(password, crypt.mksalt(crypt.METHOD_SHA512))
+        subprocess.run(['usermod', '--password', hashed_password, username], check=True)
+
+        user_home = f'/home/{username}'
+        google_auth_file = f'{user_home}/.google_authenticator'
+
+        subprocess.run(['chmod','666','/dev/net/tun'], check=True)
+
+        with open(google_auth_file, 'r') as file:
+            google_auth = file.read()
+
+        return {
+            "username": username,
+            "password": password,
+            "google_auth": google_auth,
+            "message": f"User {username} updated with new password {password}!"
+        }
+    except subprocess.CalledProcessError as e:
+        return {"error": f"Error updating password for {username}: {e}"}
 
 @app.route('/userdel', methods=['POST'])
 def userdel_endpoint():
@@ -102,6 +166,49 @@ def useradd_endpoint():
 
         if username:
             user_info = create_user(username)
+            result.append(user_info)
+
+    return jsonify(result), 200
+
+
+@app.route('/passwordupdate', methods=['POST'])
+def password_update_endpoint():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+
+    file = request.files['file']
+    if not file.filename.endswith('.txt'):
+        return jsonify({"error": "Invalid file format. Only .txt files are allowed."}), 400
+
+    lines = file.read().decode('utf-8').splitlines()
+    result = []
+
+    for line in lines:
+        username = line.strip()
+
+        if username:
+            user_info = update_password(username)
+            result.append(user_info)
+
+    return jsonify(result), 200
+
+@app.route('/googleauthupdate', methods=['POST'])
+def googleauth_update_endpoint():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+
+    file = request.files['file']
+    if not file.filename.endswith('.txt'):
+        return jsonify({"error": "Invalid file format. Only .txt files are allowed."}), 400
+
+    lines = file.read().decode('utf-8').splitlines()
+    result = []
+
+    for line in lines:
+        username = line.strip()
+
+        if username:
+            user_info = update_google_auth(username)
             result.append(user_info)
 
     return jsonify(result), 200
