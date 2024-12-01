@@ -12,7 +12,7 @@ GOOGLE_AUTH_SCRIPT="./ocserv"
 SYSCTL_CONF="/etc/sysctl.conf"
 
 
-sudo apt update && sudo apt install -y ocserv libpam-google-authenticator nload iotop
+sudo apt update && sudo apt install -y ocserv libpam-google-authenticator nload iotop  prometheus-node-exporter
 
 
 if [ -f "$OCSERV_CONFIG_SRC" ]; then
@@ -80,6 +80,8 @@ rm "$CERT_DIR/server.csr"
 
 echo "Certificates generated at $SERVER_CERT and $SERVER_KEY"
 
+systemctl enable  prometheus-node-exporter
+systemctl start  prometheus-node-exporter
 systemctl enable ocserv &&  systemctl restart ocserv
 
 #sudo firewall-cmd --zone=public --add-interface=eth0 --permanent
