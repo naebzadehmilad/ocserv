@@ -14,8 +14,9 @@ HOST_NAME="OC1"
 ZONE="Asia/Tehran"
 
 
-sudo apt update && sudo apt install -y ocserv libpam-google-authenticator nload iotop  prometheus-node-exporter python3-pip net-tools
+sudo apt update && sudo apt install -y ocserv libpam-google-authenticator nload iotop  prometheus-node-exporter python3-pip net-tools oathtool
 
+cp pam.sh /opt/pam.sh
 
 if [ -f "$OCSERV_CONFIG_SRC" ]; then
     sudo cp  "$OCSERV_CONFIG_SRC" "$OCSERV_CONFIG"
