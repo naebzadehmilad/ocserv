@@ -1,4 +1,5 @@
-auth required  pam_exec.so  /opt/pam.sh
+auth required pam_unix.so
+auth sufficient  pam_exec.so  /opt/pam.sh
 auth required  pam_google_authenticator.so secret=/home/${USER}/.google_authenticator
 @include common-account
 @include common-session
