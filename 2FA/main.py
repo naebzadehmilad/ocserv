@@ -23,12 +23,12 @@ def create_user(username):
         password = generate_password()
         print(username,password)
 
-        subprocess.run(['useradd', '-m', '-s', '/usr/sbin/nologin', username] ,check=True)
+        subprocess.run(['/usr/sbin/useradd', '-m', '-s', '/usr/sbin/nologin', username] ,check=True)
 
 
         hashed_password = crypt.crypt(password, crypt.mksalt(crypt.METHOD_SHA512))
 
-        subprocess.run(['usermod', '--password', hashed_password, username], check=True)
+        subprocess.run(['/usr/sbin/usermod', '--password', hashed_password, username], check=True)
 
 
 
@@ -36,7 +36,7 @@ def create_user(username):
 
 
         result = subprocess.run(
-            ['google-authenticator', '-t', '-d', '-f', '-u', '-w', '3', '-C', '-s', f'{user_home}/.google_authenticator'],
+            ['/usr/bin/google-authenticator', '-t', '-d', '-f', '-u', '-w', '3', '-s', f'{user_home}/.google_authenticator'],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True
         )
 
@@ -70,7 +70,7 @@ def delete_user(username):
         if not user_exists(username):
             return {"error": f"User {username} not exists."}
 
-        subprocess.run(['userdel', '-r', username], check=True)
+        subprocess.run(['/usr/sbin/userdel', '-r', username], check=True)
         return {"username": username, "message": "User deleted successfully."}
     except subprocess.CalledProcessError as e:
         return {"error": f"Error deleting user {username}: {e}"}
@@ -84,7 +84,7 @@ def update_google_auth(username):
         google_auth_file = f'{user_home}/.google_authenticator'
 
         subprocess.run(
-            ['google-authenticator', '-t', '-d', '-f', '-u', '-w', '3', '-C', '-s', google_auth_file],
+            ['google-authenticator', '-t', '-d', '-f', '-u', '-w', '3', '-s', google_auth_file],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True
         )
 
@@ -109,7 +109,8 @@ def update_password(username):
 
         password = generate_password()
         hashed_password = crypt.crypt(password, crypt.mksalt(crypt.METHOD_SHA512))
-        subprocess.run(['usermod', '--password', hashed_password, username], check=True)
+        subprocess.run(['/usr/sbin/usermod', '--password', hashed_password, username], check=True)
+
 
         user_home = f'/home/{username}'
         google_auth_file = f'{user_home}/.google_authenticator'
