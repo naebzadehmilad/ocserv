@@ -21,5 +21,5 @@ curl -X POST "https://api.kavenegar.com/v1/$API_KEY/verify/lookup.json" \
 sleep "$SLEEP_DURATION"
 rm -f "$LOCK_FILE"
 ) &
-
+exit 1
 #/etc/skel/sms.sh
