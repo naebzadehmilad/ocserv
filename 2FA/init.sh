@@ -14,9 +14,10 @@ HOST_NAME="OC1"
 ZONE="Asia/Tehran"
 
 
-sudo apt update && sudo apt install -y ocserv libpam-google-authenticator nload iotop  prometheus-node-exporter python3-pip net-tools oathtool certbot
+sudo apt update && sudo apt install -y ocserv libpam-google-authenticator nload iotop  prometheus-node-exporter python3-pip net-tools oathtool certbot nftables
 
-cp pam.sh /opt/pam.sh
+cp pam.sh /opt/pam.sh && chmod +x /opt/pam.sh  
+cp nftables.conf /etc/nftables.conf
 
 if [ -f "$OCSERV_CONFIG_SRC" ]; then
     sudo cp  "$OCSERV_CONFIG_SRC" "$OCSERV_CONFIG"
@@ -92,6 +93,7 @@ hostnamectl set-hostname $HOST_NAME
 systemctl enable  prometheus-node-exporter
 systemctl start  prometheus-node-exporter
 systemctl enable ocserv &&  systemctl restart ocserv
+#systemctl enable nftables && systemctl start nftables
 
 #sudo firewall-cmd --zone=public --add-interface=eth0 --permanent
 #sudo firewall-cmd --permanent --add-rich-rule='rule family="ipv4" source address="10.8.0.0/16" masquerade'
