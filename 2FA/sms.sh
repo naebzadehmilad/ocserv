@@ -4,8 +4,10 @@ LOCK_FILE="/home/$PAM_USER/sms.lock"
 SLEEP_DURATION=${SLEEP_DURATION:-60}
 SECRET=$(head -n 1 "$USER_HOME")
 OTP=$(oathtool --totp -b "$SECRET")
-API_KEY="959352B53656875744414F32453"
-NUMBER="0912289"
+API_KEY="5959352B5365687574416A"
+MOBILE_FILE="/home/$PAM_USER/mobile.txt"
+NUMBER=$(cat "$MOBILE_FILE")
+
 
 if [ -e "$LOCK_FILE" ]; then
     echo "Is Lock.."
