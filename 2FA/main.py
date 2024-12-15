@@ -142,7 +142,8 @@ def userdel_endpoint():
     result = []
 
     for line in lines:
-        username = line.strip()
+        parts = line.strip().split(',')
+        username = parts[0]
 
         if username:
             user_info = delete_user(username)
@@ -163,11 +164,21 @@ def useradd_endpoint():
     result = []
 
     for line in lines:
-        username = line.strip()
-
-        if username:
+        parts = line.strip().split(',')
+        if len(parts) == 1:
+            username = parts[0]
+            if username:
+                user_info = create_user(username)
+                result.append(user_info)
+        elif len(parts) == 2:
+            username = parts[0]
+            mobile = parts[1]
             user_info = create_user(username)
             result.append(user_info)
+            file_path = f'/home/{username}/mobile.txt'
+            with open(f'{file_path}', 'w') as file:
+                file.write(f'{mobile}')
+            result.append(f'Copy mobiles is done to {file_path}')
 
     return jsonify(result), 200
 
@@ -183,9 +194,9 @@ def password_update_endpoint():
 
     lines = file.read().decode('utf-8').splitlines()
     result = []
-
     for line in lines:
-        username = line.strip()
+        parts = line.strip().split(',')
+        username = parts[0]
 
         if username:
             user_info = update_password(username)
@@ -204,10 +215,9 @@ def googleauth_update_endpoint():
 
     lines = file.read().decode('utf-8').splitlines()
     result = []
-
     for line in lines:
-        username = line.strip()
-
+        parts = line.strip().split(',')
+        username = parts[0]
         if username:
             user_info = update_google_auth(username)
             result.append(user_info)
