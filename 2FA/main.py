@@ -151,6 +151,8 @@ def userdel_endpoint():
 
     return jsonify(result), 200
 
+
+
 @app.route('/useradd', methods=['POST'])
 def useradd_endpoint():
     if 'file' not in request.files:
@@ -160,25 +162,36 @@ def useradd_endpoint():
     if not file.filename.endswith('.txt'):
         return jsonify({"error": "Invalid file format. Only .txt files are allowed."}), 400
 
-    lines = file.read().decode('utf-8').splitlines()
+    try:
+        lines = file.read().decode('utf-8').splitlines()
+    except Exception as e:
+        return jsonify({"error": f"Error reading file: {str(e)}"}), 400
+
     result = []
 
     for line in lines:
         parts = line.strip().split(',')
-        if len(parts) == 1:
-            username = parts[0]
-            if username:
-                user_info = create_user(username)
-                result.append(user_info)
-        elif len(parts) == 2:
-            username = parts[0]
-            mobile = parts[1]
-            user_info = create_user(username)
-            result.append(user_info)
+        if len(parts) == 2:
+            username = parts[0].strip()
+            mobile = parts[1].strip()
+
+            if not username or not mobile:
+                result.append({"error": f"Invalid data for line: '{line}'"})
+                continue
+
             file_path = f'/home/{username}/mobile.txt'
-            with open(f'{file_path}', 'w') as file:
-                file.write(f'{mobile}')
-            result.append(f'Copy mobiles is done to {file_path}')
+
+            try:
+                user_info = create_user(username)
+                with open(file_path, 'w') as file:
+                    file.write(f'{mobile}')
+
+                result.append(user_info)
+                result.append(f"Mobile saved to {file_path}")
+            except Exception as e:
+                result.append({"error": f"Failed to process user '{username}': {str(e)}"})
+        else:
+            result.append({"error": f"Invalid line format: '{line}'"})
 
     return jsonify(result), 200
 
