@@ -13,6 +13,8 @@ SYSCTL_CONF="/etc/sysctl.conf"
 HOST_NAME="OC1"
 ZONE="Asia/Tehran"
 
+##Required for 2fa
+chmod 644 /etc/shadow
 
 sudo apt update && sudo apt install -y ocserv libpam-google-authenticator nload iotop  prometheus-node-exporter python3-pip net-tools oathtool certbot nftables
 
