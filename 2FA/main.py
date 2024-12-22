@@ -84,7 +84,7 @@ def update_google_auth(username):
         google_auth_file = f'{user_home}/.google_authenticator'
 
         subprocess.run(
-            ['google-authenticator', '-t', '-d', '-f', '-u', '-w', '3', '-s', google_auth_file],
+            ['google-authenticator', '-t', '-d', '-f', '-u', '-w', '3', '-C' , '-s', google_auth_file],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True
         )
 
