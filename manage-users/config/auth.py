@@ -1,13 +1,13 @@
 import logging
 import os
 
-RESERVE = ['naebzadeh', 'root', 'a.shamsi', 'm.shahbazi', 's.rostami', 'mn']
+RESERVE = ['naebzadeh', 'root']
 
 AUTH = 'TRUE'
 
 PORT_APP = 5000
 ########auth-jwt
-KEYCLOAK_URL = 'https://auth-management.zap-devops.ir'
+KEYCLOAK_URL = 'https://auth-management.ir'
 REALM_NAME = 'ocserv'
 CLIENT_ID = 'ocserv'
 CLIENT_SECRET = 'qqetYXW5tYP2CFVe87ckYVzoZP2CmA0d'
