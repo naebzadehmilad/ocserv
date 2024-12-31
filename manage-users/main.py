@@ -311,9 +311,9 @@ def p_update_endpoint():
 
     if username in RESERVE:
         return jsonify({"error": f"User {username} is in the reserve list, cannot delete."}), 400
-
+    result = []
     if username and password:
-            user_info = update_password(username,password)
+            user_info = update_password_custom(username,password)
             result.append(user_info)
 
     return jsonify(result), 200
@@ -449,8 +449,8 @@ def login_users_endpoint():
             return protect_func()
 
     login_users = show_login_users()
-    return jsonify({"login_users": login_users})
 
+    return login_users, 200, {'Content-Type': 'application/json'}
 
 @app.route('/show-status', methods=['GET'])
 def show_status():
@@ -465,6 +465,8 @@ def show_status():
 
     return jsonify({"status": status})
 
+
+
 @app.route('/show-all-sessions', methods=['GET'])
 def show_sessions():
     if AUTH.lower() == 'true':
@@ -473,10 +475,8 @@ def show_sessions():
             return auth_response
 
     status = show_all_sessions()
-    if not status:
-        return jsonify({"error": "Failed to fetch status"}), 500
 
-    return jsonify({"status": status})
+    return status, 200, {'Content-Type': 'application/json'}
 
 @app.route('/session-info', methods=['GET'])
 def info_session():
@@ -485,15 +485,10 @@ def info_session():
         if auth_response:
             return auth_response
     session_id = request.args.get('session_id')
-    if not session_id:
-        return jsonify({"error": "Session ID is required"}), 400
 
     session_data = session_info(session_id)
-    if not session_data:
-        return jsonify({"error": f"Failed to fetch session data for {session_id}"}), 500
 
-    return jsonify({"session": session_data})
-
+    return session_data, 200, {'Content-Type': 'application/json'}
 
 
 
