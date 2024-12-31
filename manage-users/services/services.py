@@ -5,6 +5,7 @@ import subprocess
 import crypt
 from flask import Flask, request, jsonify
 import time
+import json
 
 app = Flask(__name__)
 
@@ -38,19 +39,30 @@ def show_users():
         print(f"An error occurred: {e}")
         return []
 
+
 def show_login_users():
     try:
         result = subprocess.run(
-            "occtl show users",
-            shell=True,
+            ["occtl", "--json", "show", "users"],
             check=True,
             text=True,
             capture_output=True
         )
-        return result.stdout.strip().split("\n")
+
+        if not result.stdout.strip():
+            print("Command succeeded but returned empty output.")
+            return None
+
+        return result.stdout.strip()
     except subprocess.CalledProcessError as e:
-        print(f"An error occurred: {e}")
-        return []
+        print(f"Command failed with error: {e.stderr}")
+    except json.JSONDecodeError as e:
+        print(f"Failed to parse JSON: {e}")
+#        return json.loads(result.stdout.strip())
+#    except subprocess.CalledProcessError as e:
+#        print(f"Command failed with error: {e.stderr}")
+#    except json.JSONDecodeError as e:
+#        print(f"Failed to parse JSON: {e}")
 
 def show_status():
     try:
@@ -68,28 +80,36 @@ def show_status():
 def show_all_sessions():
     try:
         result = subprocess.run(
-            ["occtl", "show", "sessions" , "all"],
+            ["occtl", "--json" , "show", "sessions", "all"],
             check=True,
             text=True,
             capture_output=True
         )
-        return result.stdout.strip().split("\n")
+
+        if not result.stdout.strip():
+            print("Command succeeded but returned empty output.")
+            return None
+
+        return result.stdout.strip()
     except subprocess.CalledProcessError as e:
-        print(f"An error occurred: {e}")
-        return []
+        print(f"Command failed with error: {e.stderr}")
+    except json.JSONDecodeError as e:
+        print(f"Failed to parse JSON: {e}")
+    #return []
 
 def session_info(session_id):
     try:
         result = subprocess.run(
-            ["occtl", "show", "session", session_id],
+            ["occtl", "--json","show", "session", session_id],
             check=True,
             text=True,
             capture_output=True
         )
-        return result.stdout.strip().split("\n")
+        return result.stdout.strip()
     except subprocess.CalledProcessError as e:
-        print(f"An error occurred: {e}")
-        return []
+        print(f"Command failed with error: {e.stderr}")
+    except json.JSONDecodeError as e:
+        print(f"Failed to parse JSON: {e}")
 
 def c_mobile(username, mobile):
     try:
