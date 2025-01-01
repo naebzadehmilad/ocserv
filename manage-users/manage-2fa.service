@@ -1,0 +1,19 @@
+[Unit]
+Description=uWSGI 
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/uwsgi --ini /opt/manage-2fa/uwsgi.ini
+WorkingDirectory=/opt/manage-2fa
+User=root
+Group=root
+PIDFile=/opt/manage-2fa/uwsgi.pid
+Restart=always
+RestartSec=5
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=uwsgi
+ExecStop=/usr/local/bin/uwsgi --stop /opt/manage-2fa/uwsgi.pid
+ExecReload=/usr/local/bin/uwsgi --reload /opt/manage-2fa/uwsgi.pid
+[Install]
+WantedBy=multi-user.target
