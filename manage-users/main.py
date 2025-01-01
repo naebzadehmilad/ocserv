@@ -5,7 +5,7 @@ import os
 import logging
 import subprocess
 # import crypt
-from flask import g , Response
+from flask import g , Response 
 import time
 import jwt
 import requests
@@ -47,7 +47,7 @@ def protect_func():
         token = auth_header.split(' ')[1]
         is_valid, result = validate_token(token)
         if is_valid:
-            g.user = result['user']
+            g.user = result['user']  
         else:
             return jsonify({"error": "Unauthorized"}), 401
     else:
@@ -182,7 +182,7 @@ def userdel_endpoint():
         if username in RESERVE:
             return jsonify({"error": f"User {username} is in the reserve list, cannot delete."}), 400
 
-        if username:
+        if username: 
             user_info = delete_user(username)
             result.append(user_info)
 
@@ -384,7 +384,7 @@ def generate_password_endpoint():
         k = int(k)
         if k <= 0:
             raise ValueError("Password length must be greater than zero.")
-        if k > 30:
+        if k > 30: 
             raise ValueError("Password length Error")
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
@@ -467,6 +467,7 @@ def show_status():
 
 
 
+
 @app.route('/show-all-sessions', methods=['GET'])
 def show_sessions():
     if AUTH.lower() == 'true':
@@ -476,7 +477,7 @@ def show_sessions():
 
     status = show_all_sessions()
 
-    return status, 200, {'Content-Type': 'application/json'}
+    return status, 200
 
 @app.route('/session-info', methods=['GET'])
 def info_session():
@@ -549,12 +550,12 @@ def start_iftop():
 
 @app.route('/ping', methods=['GET'])
 def ping_route():
-    ip = request.args.get('ip')
+    ip = request.args.get('ip') 
     if not ip:
         return jsonify({"error": "IP parameter is required"}), 400
 
-    result = ping(ip)
-    return jsonify({"result": result})
+    result = ping(ip) 
+    return jsonify({"result": result}) 
 
 @app.route('/check-port', methods=['GET'])
 def check_port_route():
