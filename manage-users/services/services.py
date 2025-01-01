@@ -77,59 +77,41 @@ def show_status():
         print(f"An error occurred: {e}")
         return []
 
+
 def show_all_sessions():
-    try:
-        result = subprocess.run(
-            ["occtl", "--json" , "show", "sessions", "all"],
-            check=True,
-            text=True,
-            capture_output=True
-        )
-
-        if not result.stdout.strip():
-            print("Command succeeded but returned empty output.")
-            return None
-
-        return result.stdout.strip()
-    except subprocess.CalledProcessError as e:
-        print(f"Command failed with error: {e.stderr}")
-    except json.JSONDecodeError as e:
-        print(f"Failed to parse JSON: {e}")
-    #return []
-
-def session_info(session_id):
-    try:
-        result = subprocess.run(
-            ["occtl", "--json","show", "session", session_id],
-            check=True,
-            text=True,
-            capture_output=True
-        )
-        return result.stdout.strip()
-    except subprocess.CalledProcessError as e:
-        print(f"Command failed with error: {e.stderr}")
-    except json.JSONDecodeError as e:
-        print(f"Failed to parse JSON: {e}")
-
-def c_mobile(username, mobile):
-    try:
-        user_home = f'/home/{username}'
-
-        if not os.path.exists(user_home):
-            return {"error": f"User home directory '{user_home}' does not exist."}
-
-        file_path = os.path.join(user_home, 'mobile.txt')
-
-        if os.path.exists(file_path):
-            os.remove(file_path)
-
-        with open(file_path, 'w') as file:
-            file.write(mobile)
-
-        return {"success": f"Mobile number saved in {file_path}"}
-
-    except Exception as e:
-        return {"error": str(e)}
+    command = "occtl show sessions all"
+    output = subprocess.check_output(command, shell=True, text=True)
+    
+    lines = output.strip().split('\n')[1:]
+    
+    sessions = []
+    
+    for line in lines:
+        parts = line.split()
+        
+        session = parts[0]
+        user = parts[1]
+        vhost = parts[2]
+        ip = parts[3]
+        
+        user_agent = " ".join(parts[4:-2])  
+        created = parts[-2]
+        status = parts[-1]
+        
+        session_dict = {
+            "session": session,
+            "user": user,
+            "vhost": vhost,
+            "ip": ip,
+            "user_agent": user_agent,
+            "created": created,
+            "status": status
+        }
+        
+        sessions.append(session_dict)
+    
+    json_data = json.dumps({"sessions": sessions}, indent=2)
+    return json_data
 
 def get_ocserv_logs():
     try:
@@ -166,7 +148,7 @@ def c_user(username, password, mobile):
         subprocess.run(['chmod', '600', google_auth_file], check=True)
 
         if os.path.exists(mobile_file):
-            os.remove(mobile_file)
+            os.remove(mobile_file)  
         with open(mobile_file, 'w') as f:
             f.write(mobile)
 
@@ -341,11 +323,11 @@ def generate_iftop(interface):
             if line:
                 ###Genearte yield
                 yield f"data: {line.strip()}\n\n"
-                time.sleep(0.7)
+                time.sleep(0.7)  
     except Exception as e:
         yield f"data: Error: {str(e)}\n\n"
     finally:
-        process.terminate()
+        process.terminate() 
 
 def ping(ip):
     try:
@@ -356,11 +338,11 @@ def ping(ip):
             text=True
         )
         stdout, stderr = process.communicate()
-
+        
         if process.returncode == 0:
-            return stdout
+            return stdout 
         else:
-            return f"Error: {stderr}"
+            return f"Error: {stderr}" 
     except Exception as e:
         return f"Exception occurred: {str(e)}"
 
@@ -374,7 +356,7 @@ def check_port(port, ip, protocol='tcp'):
         else:
             command = ["nc", "-v", "-z", "-w", "2", ip, port]
 
-        print(f"Running command: {' '.join(command)}")
+        print(f"Running command: {' '.join(command)}")  
 
         process = subprocess.Popen(
             command,
@@ -385,8 +367,8 @@ def check_port(port, ip, protocol='tcp'):
 
         stdout, stderr = process.communicate()
 
-        print(f"stdout: {stdout}")
-        print(f"stderr: {stderr}")
+        print(f"stdout: {stdout}")  
+        print(f"stderr: {stderr}") 
 
         if process.returncode == 0:
             return f"Connection to {ip} {port} succeeded!"
