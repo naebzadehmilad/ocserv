@@ -5,7 +5,7 @@ import os
 import logging
 import subprocess
 # import crypt
-from flask import g , Response 
+from flask import g , Response
 import time
 import jwt
 import requests
@@ -47,7 +47,8 @@ def protect_func():
         token = auth_header.split(' ')[1]
         is_valid, result = validate_token(token)
         if is_valid:
-            g.user = result['user']  
+            g.user = result['user']
+            log_event('info',f"{g.user}")
         else:
             return jsonify({"error": "Unauthorized"}), 401
     else:
@@ -182,7 +183,7 @@ def userdel_endpoint():
         if username in RESERVE:
             return jsonify({"error": f"User {username} is in the reserve list, cannot delete."}), 400
 
-        if username: 
+        if username:
             user_info = delete_user(username)
             result.append(user_info)
 
@@ -384,7 +385,7 @@ def generate_password_endpoint():
         k = int(k)
         if k <= 0:
             raise ValueError("Password length must be greater than zero.")
-        if k > 30: 
+        if k > 30:
             raise ValueError("Password length Error")
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
@@ -441,6 +442,23 @@ def users_endpoint():
 
     users = show_users()
     return jsonify({"users": users})
+
+
+
+@app.route('/read-secret', methods=['POST'])
+def get_2fa():
+    data = request.get_json()
+    username = data.get('username')
+
+    if not username:
+        return jsonify({"error": "Username is required"}), 400
+
+    if username in RESERVE:
+        return jsonify({"error": f"User {username} is in the reserve list, cannot read secret."}), 400
+
+    result = r_2fa(username)
+
+    return jsonify(result)
 
 @app.route('/login-users', methods=['GET'])
 def login_users_endpoint():
@@ -550,12 +568,12 @@ def start_iftop():
 
 @app.route('/ping', methods=['GET'])
 def ping_route():
-    ip = request.args.get('ip') 
+    ip = request.args.get('ip')
     if not ip:
         return jsonify({"error": "IP parameter is required"}), 400
 
-    result = ping(ip) 
-    return jsonify({"result": result}) 
+    result = ping(ip)
+    return jsonify({"result": result})
 
 @app.route('/check-port', methods=['GET'])
 def check_port_route():
