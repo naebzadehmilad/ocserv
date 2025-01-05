@@ -77,27 +77,39 @@ def show_status():
         print(f"An error occurred: {e}")
         return []
 
+def session_info(session_id):
+    try:
+        result = subprocess.run(
+            ["occtl" , "show", "session", f"{session_id}"],
+            check=True,
+            text=True,
+            capture_output=True
+        )
+        return result.stdout.strip().split("\n")
+    except subprocess.CalledProcessError as e:
+        print(f"An error occurred: {e}")
+        return []
 
 def show_all_sessions():
     command = "occtl show sessions all"
     output = subprocess.check_output(command, shell=True, text=True)
-    
+
     lines = output.strip().split('\n')[1:]
-    
+
     sessions = []
-    
+
     for line in lines:
         parts = line.split()
-        
+
         session = parts[0]
         user = parts[1]
         vhost = parts[2]
         ip = parts[3]
-        
-        user_agent = " ".join(parts[4:-2])  
+
+        user_agent = " ".join(parts[4:-2])
         created = parts[-2]
         status = parts[-1]
-        
+
         session_dict = {
             "session": session,
             "user": user,
@@ -107,9 +119,9 @@ def show_all_sessions():
             "created": created,
             "status": status
         }
-        
+
         sessions.append(session_dict)
-    
+
     json_data = json.dumps({"sessions": sessions}, indent=2)
     return json_data
 
@@ -148,7 +160,7 @@ def c_user(username, password, mobile):
         subprocess.run(['chmod', '600', google_auth_file], check=True)
 
         if os.path.exists(mobile_file):
-            os.remove(mobile_file)  
+            os.remove(mobile_file)
         with open(mobile_file, 'w') as f:
             f.write(mobile)
 
@@ -170,6 +182,40 @@ def c_user(username, password, mobile):
     except Exception as e:
         return {"error": "Failed to create user", "details": str(e)}
 
+def c_mobile(username, mobile):
+    file_path = f"/home/{username}/mobile.txt"
+    user_home = f"/home/{username}"
+
+    if not os.path.exists(user_home):
+        return {"error": f"User '{username}' does not exist."}
+
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+    with open(file_path, 'w') as file:
+        file.write(mobile + '\n')
+
+    return {"success": f"Mobile {mobile} added for user {username}"}
+
+
+def r_2fa(username):
+    file_path = f"/home/{username}/.google_authenticator"
+    user_home = f"/home/{username}"
+
+    if not os.path.exists(user_home):
+        return {"error": f"User home directory '{user_home}' does not exist."}
+
+    if not os.path.isfile(file_path):
+        return {"error": f"Authenticator file '{file_path}' does not exist."}
+
+    try:
+        with open(file_path, 'r') as file:
+            secret = file.read().replace('\n', '').replace('\\', '').replace('"', '')
+
+    except Exception as e:
+        return {"error": f"An error occurred while reading the file: {str(e)}"}
+
+    return {"success": f"Secret '{secret}' for user '{username}'"}
 
 def create_user(username):
     try:
@@ -310,10 +356,10 @@ def update_password_custom(username,password):
         return {"error": f"Error updating password for {username}: {e}"}
 
 
-def generate_iftop(interface):
+def generate_iftop(interface,timeout_duration=120):
     try:
         process = subprocess.Popen(
-            ["sudo", "iftop", "-i", interface, "-t"],
+            ["timeout", str(timeout_duration), "sudo", "iftop", "-i", interface, "-t"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True
@@ -323,11 +369,13 @@ def generate_iftop(interface):
             if line:
                 ###Genearte yield
                 yield f"data: {line.strip()}\n\n"
-                time.sleep(0.7)  
+                time.sleep(0.7)
     except Exception as e:
         yield f"data: Error: {str(e)}\n\n"
     finally:
-        process.terminate() 
+        if process and process.poll() is None:
+            process.terminate()
+            process.wait()
 
 def ping(ip):
     try:
@@ -338,11 +386,11 @@ def ping(ip):
             text=True
         )
         stdout, stderr = process.communicate()
-        
+
         if process.returncode == 0:
-            return stdout 
+            return stdout
         else:
-            return f"Error: {stderr}" 
+            return f"Error: {stderr}"
     except Exception as e:
         return f"Exception occurred: {str(e)}"
 
@@ -356,7 +404,7 @@ def check_port(port, ip, protocol='tcp'):
         else:
             command = ["nc", "-v", "-z", "-w", "2", ip, port]
 
-        print(f"Running command: {' '.join(command)}")  
+        print(f"Running command: {' '.join(command)}")
 
         process = subprocess.Popen(
             command,
@@ -367,8 +415,8 @@ def check_port(port, ip, protocol='tcp'):
 
         stdout, stderr = process.communicate()
 
-        print(f"stdout: {stdout}")  
-        print(f"stderr: {stderr}") 
+        print(f"stdout: {stdout}")
+        print(f"stderr: {stderr}")
 
         if process.returncode == 0:
             return f"Connection to {ip} {port} succeeded!"
