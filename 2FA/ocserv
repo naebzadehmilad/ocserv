@@ -1,9 +1,8 @@
-auth requisite pam_unix.so
-auth  [success=1 default=ignore]   pam_exec.so /opt/pam.sh
-auth required  pam_google_authenticator.so secret=/home/${USER}/.google_authenticator
+auth requisite pam_unix.so debug
+auth  [success=1 default=ignore]   pam_exec.so /opt/pam.sh debug
+auth required  pam_google_authenticator.so secret=/home/${USER}/.google_authenticator noskewadj   [authtok_prompt=Your Google-Auth ZAPEXPRESS: ] echo_verification_code debug
 @include common-account
 @include common-session
-session required pam_limits.so
+#session required pam_limits.so
 @include common-password
-
-###https://github.com/google/google-authenticator-libpam
+session optional pam_systemd.so
