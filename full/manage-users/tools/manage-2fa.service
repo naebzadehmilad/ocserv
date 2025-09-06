@@ -1,5 +1,5 @@
 [Unit]
-Description=uWSGI 
+Description=uWSGI manage-2fa 
 After=network.target
 
 [Service]
@@ -17,3 +17,5 @@ ExecStop=/usr/local/bin/uwsgi --stop /opt/manage-2fa/uwsgi.pid
 ExecReload=/usr/local/bin/uwsgi --reload /opt/manage-2fa/uwsgi.pid
 [Install]
 WantedBy=multi-user.target
+
+

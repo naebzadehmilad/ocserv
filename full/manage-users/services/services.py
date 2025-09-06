@@ -152,7 +152,7 @@ def c_user(username, password, mobile):
         subprocess.run(['/usr/sbin/usermod', '--password', hashed_password, username], check=True)
 
         subprocess.run(
-            ['google-authenticator', '-t', '-d', '-f', '-u', '-w', '5', '-C', '-s', google_auth_file],
+            ['google-authenticator', '-t', '-d', '-f', '-u', '-w', '5', '-s', google_auth_file],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True
         )
 
@@ -237,7 +237,7 @@ def create_user(username):
 
 
         subprocess.run(
-            ['google-authenticator', '-t', '-d', '-f', '-u', '-w', '5','-C', '-s', google_auth_file],
+            ['google-authenticator', '-t', '-d', '-f', '-u', '-w', '5', '-s', google_auth_file],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True
         )
         google_auth = None
@@ -284,7 +284,7 @@ def update_google_auth(username):
         google_auth_file = f'{user_home}/.google_authenticator'
 
         subprocess.run(
-            ['google-authenticator', '-t', '-d', '-f', '-u', '-w', '5','-C', '-s', google_auth_file],
+            ['google-authenticator', '-t', '-d', '-f', '-u', '-w', '5', '-s', google_auth_file],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True
         )
 

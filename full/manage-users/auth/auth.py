@@ -2,8 +2,8 @@ import time
 import jwt
 from flask import request, jsonify, g
 import requests
-from config.utils import *
-from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+from config import *
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError 
 
 
 jwks = None
@@ -85,3 +85,5 @@ def validate_token(token):
 
     except jwt.InvalidTokenError:
         return False, {"error": "Invalid token"}
+
+
